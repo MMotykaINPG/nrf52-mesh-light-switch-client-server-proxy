@@ -101,6 +101,10 @@ static bool                             m_on_off_button_flag = false;
 #define NEXT_CONN_PARAMS_UPDATE_DELAY   APP_TIMER_TICKS(2000)                       /**< Time between each call to sd_ble_gap_conn_param_update after the first call. */
 #define MAX_CONN_PARAMS_UPDATE_COUNT    3                                           /**< Number of attempts before giving up the connection parameter negotiation. */
 
+APP_TIMER_DEF(timer_test_def);
+static uint32_t m_ticks_start;
+static uint32_t m_ticks_end;
+
 static bool m_device_provisioned;
 
 static void gap_params_init(void);
@@ -123,7 +127,11 @@ static bool on_off_server_set_cb(const generic_on_off_server_t * p_server, bool 
     // TODO: Hands on 2.3 - After initializing the PWM library in main(), change this function to use the PWM Driver instead of the hal_led_.. functions
     //                      Try to make the LED's fade in and out when the callback occurs, rather than having it set/cleared immediately
     uint32_t err_code;
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Got SET command to %u\n", value);
+	m_ticks_end = app_timer_cnt_get();
+	
+	uint32_t tickDiff = app_timer_cnt_diff_compute(m_ticks_start, m_ticks_end);
+	
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Got SET command to %u - ticks elapsed: %d", value, tickDiff);
     if (value)
     {
         hal_led_pin_set(ONOFF_SERVER_0_LED, true);
@@ -189,6 +197,8 @@ static void button_event_handler(uint32_t button_number)
             case 1:
                 /* send a group message to the ODD group, with flip the current button flag value */
                 m_on_off_button_flag=!m_on_off_button_flag; 
+				m_ticks_start = app_timer_cnt_get();
+				
                 status = generic_on_off_client_set_unreliable(&m_client,
                                                            m_on_off_button_flag,
                                                           GROUP_MSG_REPEAT_COUNT);
@@ -429,6 +439,16 @@ int main(void)
     //                      Hint: Look at the comments in simple_pwm.h for examples of how to use the simple_pwm library
     //                      Hint2: The LED's on the board are defined by the BSP_LED_x defines, where x is 0-3
     
+	app_timer_init();
+	 
+    uint32_t err_code;
+    // Create timers
+    err_code = app_timer_create(&timer_test_def,
+        APP_TIMER_MODE_SINGLE_SHOT,
+        repeated_timer_handler);
+		
+    APP_ERROR_CHECK(err_code);
+	
     for (;;)
     {
         (void)sd_app_evt_wait();
