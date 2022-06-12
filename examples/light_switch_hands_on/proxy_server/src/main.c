@@ -102,9 +102,9 @@ static bool                             m_on_off_button_flag = false;
 #define MAX_CONN_PARAMS_UPDATE_COUNT    3                                           /**< Number of attempts before giving up the connection parameter negotiation. */
 
 APP_TIMER_DEF(timer_test_def);
-#define NUMBER_OF_TOGGLES 20
-#define TOGGLE_INTERVAL_MS 500
-static int m_test_counter = 0;
+#define NUMBER_OF_TOGGLES 2000
+static int m_true_transmited_cnt = 0;
+static int m_true_received_cnt = 0;
 
 #define NBELEMS(x)  (sizeof(x) / sizeof((x)[0]))
 static const int m_intervals_table_ms[] = {100,95,90,85,80,75,70,65,60,55,50,45,40,35,30,25,20,15,10,5};
@@ -132,9 +132,10 @@ static bool on_off_server_set_cb(const generic_on_off_server_t * p_server, bool 
     // TODO: Hands on 2.3 - After initializing the PWM library in main(), change this function to use the PWM Driver instead of the hal_led_.. functions
     //                      Try to make the LED's fade in and out when the callback occurs, rather than having it set/cleared immediately
     uint32_t err_code;
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Got SET command to %u\n", value);
+    
     if (value)
     {
+		__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Got SET command to %u - Interval %d - Counter %d", m_on_off_button_flag, m_intervals_table_ms[m_interval_table_idx], ++m_true_received_cnt);
         hal_led_pin_set(ONOFF_SERVER_0_LED, true);
         m_led_flag = true;
     }
@@ -201,6 +202,8 @@ static void button_event_handler(uint32_t button_number)
 				break;
             case 1:
                 /* send a group message to the ODD group, with flip the current button flag value */
+				m_true_received_cnt = 0;
+				m_true_transmited_cnt = 0;
                 err_code = app_timer_start(
 					timer_test_def,
 					APP_TIMER_TICKS(m_intervals_table_ms[m_interval_table_idx]),
@@ -447,9 +450,10 @@ static void repeated_timer_handler(void* p_context)
         m_on_off_button_flag,
         GROUP_MSG_REPEAT_COUNT);
 		
-	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Sent SET command to %u - Interval %d", m_on_off_button_flag, m_intervals_table_ms[m_interval_table_idx]);
+	if(m_on_off_button_flag)	
+		__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Sent SET command to %u - Interval %d - Counter %d", m_on_off_button_flag, m_intervals_table_ms[m_interval_table_idx], ++m_true_transmited_cnt);
 
-    if (!m_on_off_button_flag)
+    if (m_true_transmited_cnt >= NUMBER_OF_TOGGLES)
     {	
         err_code = app_timer_stop(timer_test_def);
         APP_ERROR_CHECK(err_code);
