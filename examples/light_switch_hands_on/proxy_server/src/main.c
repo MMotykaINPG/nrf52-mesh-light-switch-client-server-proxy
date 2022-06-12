@@ -447,7 +447,7 @@ static void repeated_timer_handler(void* p_context)
         m_on_off_button_flag,
         GROUP_MSG_REPEAT_COUNT);
 		
-	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Sent SET command to %u - Interval %d", value, m_intervals_table_ms[m_interval_table_idx]);
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Sent SET command to %u - Interval %d", m_on_off_button_flag, m_intervals_table_ms[m_interval_table_idx]);
 
     if (!m_on_off_button_flag)
     {	
