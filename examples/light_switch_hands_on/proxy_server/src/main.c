@@ -135,7 +135,7 @@ static bool on_off_server_set_cb(const generic_on_off_server_t * p_server, bool 
     
     if (value)
     {
-		__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Got SET command to %u - Interval %d - Counter %d", m_on_off_button_flag, m_intervals_table_ms[m_interval_table_idx], ++m_true_received_cnt);
+		__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Got SET command to %u - Interval %d - Counter %d\n", m_on_off_button_flag, m_intervals_table_ms[m_interval_table_idx], ++m_true_received_cnt);
         hal_led_pin_set(ONOFF_SERVER_0_LED, true);
         m_led_flag = true;
     }
@@ -198,7 +198,7 @@ static void button_event_handler(uint32_t button_number)
             case 0:
 				if(m_interval_table_idx > 0)
 					m_interval_table_idx--;
-				__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Selected interval %d ms", m_intervals_table_ms[m_interval_table_idx]);
+				__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Selected interval %d ms\n", m_intervals_table_ms[m_interval_table_idx]);
 				break;
             case 1:
                 /* send a group message to the ODD group, with flip the current button flag value */
@@ -215,7 +215,7 @@ static void button_event_handler(uint32_t button_number)
 			case 2:
 				if(m_interval_table_idx < NBELEMS(m_intervals_table_ms) - 1)
 					m_interval_table_idx++;
-				__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Selected interval %d ms", m_intervals_table_ms[m_interval_table_idx]);
+				__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Selected interval %d ms\n", m_intervals_table_ms[m_interval_table_idx]);
 				break;
             /* Initiate node reset */
             case 3:
@@ -451,7 +451,7 @@ static void repeated_timer_handler(void* p_context)
         GROUP_MSG_REPEAT_COUNT);
 		
 	if(m_on_off_button_flag)	
-		__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Sent SET command to %u - Interval %d - Counter %d", m_on_off_button_flag, m_intervals_table_ms[m_interval_table_idx], ++m_true_transmited_cnt);
+		__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Sent SET command to %u - Interval %d - Counter %d\n", m_on_off_button_flag, m_intervals_table_ms[m_interval_table_idx], ++m_true_transmited_cnt);
 
     if (m_true_transmited_cnt >= NUMBER_OF_TOGGLES)
     {	
