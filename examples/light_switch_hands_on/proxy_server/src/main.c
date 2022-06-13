@@ -94,7 +94,7 @@ static bool                             m_on_off_button_flag = false;
 
 #define MIN_CONN_INTERVAL               MSEC_TO_UNITS(25,  UNIT_1_25_MS)           /**< Minimum acceptable connection interval. was 250 */
 #define MAX_CONN_INTERVAL               MSEC_TO_UNITS(100,  UNIT_1_25_MS)           /**< Maximum acceptable connection interval. was 1000 */
-#define GROUP_MSG_REPEAT_COUNT          (5)
+#define GROUP_MSG_REPEAT_COUNT          (1)
 #define SLAVE_LATENCY                   0                                           /**< Slave latency. */
 #define CONN_SUP_TIMEOUT                MSEC_TO_UNITS(4000, UNIT_10_MS)             /**< Connection supervisory timeout (4 seconds). */
 #define FIRST_CONN_PARAMS_UPDATE_DELAY  APP_TIMER_TICKS(100)                        /**< Time from initiating event (connect or start of notification) to first time sd_ble_gap_conn_param_update is called. */
@@ -129,9 +129,9 @@ static bool on_off_server_set_cb(const generic_on_off_server_t * p_server, bool 
     uint32_t err_code;
 	m_ticks_end = app_timer_cnt_get();
 	
-	uint32_t tickDiff = app_timer_cnt_diff_compute(m_ticks_start, m_ticks_end);
+	uint32_t tickDiff = app_timer_cnt_diff_compute(m_ticks_end, m_ticks_start);
 	
-    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Got SET command to %u - ticks elapsed: %d", value, tickDiff);
+    __LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "Got SET command to %u - ticks elapsed: %d\n", value, tickDiff);
     if (value)
     {
         hal_led_pin_set(ONOFF_SERVER_0_LED, true);
@@ -428,6 +428,11 @@ static void start(void)
     __LOG_XB(LOG_SRC_APP, LOG_LEVEL_INFO, "Device UUID ", p_uuid, NRF_MESH_UUID_SIZE);
 }
 
+static void repeated_timer_handler(void* p_context)
+{
+    return;
+}
+
 
 int main(void)
 {
@@ -444,10 +449,36 @@ int main(void)
     uint32_t err_code;
     // Create timers
     err_code = app_timer_create(&timer_test_def,
-        APP_TIMER_MODE_SINGLE_SHOT,
+        APP_TIMER_MODE_REPEATED,
         repeated_timer_handler);
 		
     APP_ERROR_CHECK(err_code);
+	
+	err_code = app_timer_start(
+					timer_test_def,
+					APP_TIMER_TICKS(100000),
+					NULL);
+		
+    APP_ERROR_CHECK(err_code);
+	
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "1ms = %d ticks\n", APP_TIMER_TICKS(1));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "2ms = %d ticks\n", APP_TIMER_TICKS(2));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "3ms = %d ticks\n", APP_TIMER_TICKS(3));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "4ms = %d ticks\n", APP_TIMER_TICKS(4));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "5ms = %d ticks\n", APP_TIMER_TICKS(5));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "6ms = %d ticks\n", APP_TIMER_TICKS(6));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "7ms = %d ticks\n", APP_TIMER_TICKS(7));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "8ms = %d ticks\n", APP_TIMER_TICKS(8));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "9ms = %d ticks\n", APP_TIMER_TICKS(9));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "10ms = %d ticks\n", APP_TIMER_TICKS(10));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "25ms = %d ticks\n", APP_TIMER_TICKS(25));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "50ms = %d ticks\n", APP_TIMER_TICKS(50));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "100ms = %d ticks\n", APP_TIMER_TICKS(100));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "150ms = %d ticks\n", APP_TIMER_TICKS(150));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "250ms = %d ticks\n", APP_TIMER_TICKS(250));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "500ms = %d ticks\n", APP_TIMER_TICKS(500));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "750ms = %d ticks\n", APP_TIMER_TICKS(750));
+	__LOG(LOG_SRC_APP, LOG_LEVEL_INFO, "1000ms = %d ticks\n", APP_TIMER_TICKS(1000));
 	
     for (;;)
     {
